@@ -34,6 +34,46 @@ export default function App() {
   });
   const [checkoutName, setCheckoutName] = useState("");
 
+  // B2B Consultation Form States
+  const [b2bCompany, setB2bCompany] = useState("");
+  const [b2bName, setB2bName] = useState("");
+  const [b2bPhone, setB2bPhone] = useState("");
+  const [b2bEmail, setB2bEmail] = useState("");
+  const [b2bMessage, setB2bMessage] = useState("");
+
+  const handleB2bSubmit = async (e) => {
+    e.preventDefault();
+    if (!b2bCompany || !b2bName || !b2bPhone) {
+      alert("필수 입력 항목을 채워주세요.");
+      return;
+    }
+    
+    const discordMsg = `🔔 **[B2B 무상 컨설팅 신규 신청 접수]**\n\n• **회사명**: ${b2bCompany}\n• **담당자명**: ${b2bName}\n• **연락처**: ${b2bPhone}\n• **이메일**: ${b2bEmail || '기재안함'}\n• **도입 희망 업무**: ${b2bMessage || '기재안함'}`;
+    sendDiscordMessage("Sales_Agent", discordMsg);
+    
+    try {
+      await fetch('http://localhost:3001/api/update-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: 'B2B-lead',
+          status: '완료',
+          qaNotes: `[B2B 신규 리드 접수] ${b2bCompany} (${b2bName})`
+        })
+      });
+    } catch (err) {
+      console.log("Sheets lead warning:", err.message);
+    }
+    
+    alert(`🎉 B2B 무상 컨설팅 신청이 접수되었습니다!\n\n저희 B2B 세일즈 에이전트(Sales_Agent)가 기재해주신 연락처로 24시간 내에 제안서와 컨설팅 일정을 송부해 드리겠습니다.`);
+    setB2bCompany("");
+    setB2bName("");
+    setB2bPhone("");
+    setB2bEmail("");
+    setB2bMessage("");
+    triggerToast("B2B 컨설팅 신청 접수 완료!");
+  };
+
   // Feedback Log State
   const [feedbacks, setFeedbacks] = useState([]);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
@@ -48,6 +88,7 @@ export default function App() {
   }, []);
 
   const [isPremium, setIsPremium] = useState(localStorage.getItem('jdifl_is_premium') === 'true');
+  const [currentTab, setCurrentTab] = useState('home');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -484,15 +525,44 @@ export default function App() {
         </div>
 
         {/* Header bar */}
-        <header className="app-header">
+        <header className="app-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div className="brand-section">
-            <h1 className="brand-logo">JDIFL</h1>
+            <h1 className="brand-logo" style={{ cursor: 'pointer' }} onClick={() => setCurrentTab('home')}>JDIFL</h1>
             <span className="brand-badge">Recipe Factory</span>
           </div>
+          
+          <nav className="nav-tabs" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <button 
+              className={`theme-btn ${currentTab === 'home' ? 'active' : ''}`} 
+              onClick={() => setCurrentTab('home')}
+              style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderRadius: '6px' }}
+            >
+              🏠 홈
+            </button>
+            <button 
+              className={`theme-btn ${currentTab === 'about' ? 'active' : ''}`} 
+              onClick={() => setCurrentTab('about')}
+              style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderRadius: '6px' }}
+            >
+              👥 회사 소개
+            </button>
+            <button 
+              className={`theme-btn ${currentTab === 'b2b' ? 'active' : ''}`} 
+              onClick={() => setCurrentTab('b2b')}
+              style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem', borderRadius: '6px' }}
+            >
+              🤝 B2B 무료 컨설팅
+            </button>
+          </nav>
+
           <div style={{ textAlign: 'right' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--accent-cyan)', fontWeight: '700' }}>고객 전용 채널</span>
+            <span style={{ fontSize: '0.8rem', color: 'var(--accent-cyan)', fontWeight: '700' }}>고객 전용 채널</span>
           </div>
         </header>
+
+        {/* Dynamic page contents based on currentTab */}
+        {currentTab === 'home' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out' }}>
 
         {/* MARKETING REVENUE & LEAD BANNER */}
         <div className="glass-panel marketing-banner">
@@ -664,6 +734,165 @@ export default function App() {
             </div>
           </div>
         </div>
+        </div>)}
+
+        {/* ABOUT PAGE */}
+        {currentTab === 'about' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out', display: 'flex', flexDirection: 'column', gap: '2rem', marginTop: '1rem' }}>
+            <div className="glass-panel" style={{ padding: '2.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <h2 style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--accent-purple)', marginBottom: '1rem' }}>
+                🏢 JDIFL 회사 소개
+              </h2>
+              <p style={{ color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
+                JDIFL은 <strong>'초보자의 실무 문제를 해결하는 AI 자동화 레시피 팩토리'</strong>입니다.<br/>
+                어려운 개발 이론이 아닌, 실무자들이 복사하여 즉각 10배의 효율을 얻을 수 있는 1등급 프롬프트 레시피를 전문 연구/발행합니다.
+              </p>
+              <blockquote style={{ borderLeft: '3px solid var(--accent-cyan)', paddingLeft: '1rem', margin: '1rem 0', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.95rem' }}>
+                "값비싼 외주비나 개발자 없이도 24시간 자율 가동하는 AI 군단을 이식하여, 하루 8시간의 수작업 노동을 단 10분으로 격하합니다."
+              </blockquote>
+            </div>
+
+            {/* 55-AGENT ORGANIZATION MATRIX */}
+            <div className="glass-panel" style={{ padding: '2rem' }}>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '1rem', color: 'var(--text-primary)' }}>
+                👥 JDIFL 8단계 55인 AI 에이전트 조직 매트릭스
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+                JDIFL은 1인 기업이 아닙니다. 비즈니스를 유기적이고 자율적으로 무정지 경영하기 위해 다음과 같이 총 55인의 전문 AI 에이전트 군단을 가동하고 있습니다.
+              </p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#fb7185', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 1 - 경영진 (5)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • CEO AI, COO AI, CFO AI, CTO AI, CSO AI
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#60a5fa', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 2 - 연구소 (8)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • 시장조사, 경쟁사 분석, 미래 예측, 트렌드 추적 등
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#c084fc', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 3 - 제품개발 (10)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • 기획, UI/UX, 백엔드, 프론트엔드, QA, 보안 등
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#f472b6', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 4 - 디자인 (5)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • 브랜드 디자인, 그래픽, 영상, 광고배너 등
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#fb923c', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 5 - 마케팅 (8)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • SEO 최적화, 유튜브/틱톡/인스타 마케팅, 카피라이팅 등
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#38bdf8', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 6 - 영업 (6)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • 세일즈 대행, CRM 관리, 자동 제안 메일 송출 등
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#4ade80', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 7 - CS지원 (6)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • 챗봇 상담, FAQ 관리, 컴플레인 완화 및 환불 등
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '10px', padding: '1rem' }}>
+                  <strong style={{ color: '#fbbf24', fontSize: '0.9rem', display: 'block', marginBottom: '0.5rem' }}>Level 8 - 회사운영 (7)</strong>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
+                    • 자원 분배, 법무 위반 스캔, Toss 정산 회계 등
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* B2B CONSULTING INQUIRY PAGE */}
+        {currentTab === 'b2b' && (
+          <div style={{ animation: 'fadeIn 0.3s ease-out', maxWidth: '600px', margin: '1rem auto 0 auto' }}>
+            <div className="glass-panel" style={{ padding: '2.5rem', border: '1px solid var(--accent-cyan)' }}>
+              <h2 style={{ fontSize: '1.5rem', fontWeight: '800', color: 'var(--accent-cyan)', marginBottom: '0.5rem' }}>
+                🤝 B2B 맞춤형 AI 자동화 무상 세팅 신청
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '2rem', lineHeight: '1.6' }}>
+                자영업, 학원, 쇼핑몰의 수동 가공 업무를 대행할 '전용 AI 에이전트'를 빌드해 드리는 B2B 서비스입니다. 신청해 주시면 저희 영업팀이 분석 제안서를 송부해 드립니다.
+              </p>
+
+              <form onSubmit={handleB2bSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>회사명 / 사이트명 (필수)</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    required 
+                    value={b2bCompany}
+                    onChange={(e) => setB2bCompany(e.target.value)}
+                    placeholder="예: 이투스 분당학원 / 스타쇼핑몰"
+                  />
+                </div>
+                
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>담당자 성함 (필수)</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    required 
+                    value={b2bName}
+                    onChange={(e) => setB2bName(e.target.value)}
+                    placeholder="홍길동"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>연락처 (필수)</label>
+                  <input 
+                    type="text" 
+                    className="input-field" 
+                    required 
+                    value={b2bPhone}
+                    onChange={(e) => setB2bPhone(e.target.value)}
+                    placeholder="010-1234-5678"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>이메일 주소 (선택)</label>
+                  <input 
+                    type="email" 
+                    className="input-field" 
+                    value={b2bEmail}
+                    onChange={(e) => setB2bEmail(e.target.value)}
+                    placeholder="contact@company.com"
+                  />
+                </div>
+
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem' }}>도입을 원하는 수동 업무 내용 (선택)</label>
+                  <textarea 
+                    className="input-field" 
+                    value={b2bMessage}
+                    onChange={(e) => setB2bMessage(e.target.value)}
+                    placeholder="예: 매일 시술 중 오는 문의 전화 응대 / 상품 상세페이지 자동 한글 번역"
+                    rows="3"
+                    style={{ resize: 'vertical', fontFamily: 'inherit' }}
+                  />
+                </div>
+
+                <button type="submit" className="btn btn-primary" style={{ padding: '0.8rem', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.9rem', marginTop: '0.5rem', width: '100%' }}>
+                  🤝 무상 컨설팅 및 파일럿 신청하기
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* BANK DEPOSIT CHECKOUT MODAL */}
         {showCheckoutSim && (

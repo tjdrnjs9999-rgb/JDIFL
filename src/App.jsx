@@ -728,26 +728,17 @@ export default function App() {
                   />
                 </div>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                  ℹ️ 입금 후 jdifl.outbound@gmail.com 으로 입금자명을 메일로 보내주시거나 아래 버튼을 눌러 입금을 알려주시면, 정산팀 확인 후 1분 내로 프리미엄 활성화 링크가 메일로 전달됩니다.
+                  ℹ️ 입금 완료 후 아래 [입금 확인 요청 구글 폼] 단추를 눌러 정보를 기재해 주세요. 정산팀이 실시간 확인 후 1분 내로 프리미엄 활성화 링크를 이메일로 자동 송출해 드립니다.
                 </p>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  <a 
-                    href="mailto:jdifl.outbound@gmail.com?subject=[입금확인요청] 프리미엄 패키지 활성화&body=입금자명: %0A가입이메일: " 
-                    className="btn btn-secondary" 
-                    style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                  >
-                    ✉️ 이메일로 알리기
-                  </a>
-                  <a 
-                    href="https://docs.google.com/forms/d/e/1FAIpQLSfD_K_7h8jB5hYc00gT-G1Wp4J2hV_W_y8L9H_3U8Y_V_64w/viewform?usp=sf_link" 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="btn btn-secondary" 
-                    style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                  >
-                    📝 구글 폼으로 알리기
-                  </a>
-                </div>
+                <a 
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSctVr0ebGnqFiHsU4lBeWP2eQ3EHrol_eM2mIuxtcGEcE7_2g/viewform?usp=publish-editor" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn btn-secondary" 
+                  style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem', textDecoration: 'none', padding: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.5rem', background: 'rgba(6, 182, 212, 0.15)', border: '1px solid var(--accent-cyan)', color: '#ffffff' }}
+                >
+                  📝 입금 확인 요청 구글 폼 작성하기
+                </a>
                 <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', justifyContent: 'center', marginTop: '1rem', width: '100%' }}>
                   주문 신청 및 송금 완료
                 </button>
@@ -1433,26 +1424,17 @@ export default function App() {
                 />
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                ℹ️ 입금 후 jdifl.outbound@gmail.com 으로 입금자명을 메일로 보내주시거나 아래 버튼을 눌러 입금을 알려주시면, 정산팀 확인 후 1분 내로 프리미엄 활성화 링크가 메일로 전달됩니다.
+                ℹ️ 입금 완료 후 아래 [입금 확인 요청 구글 폼] 단추를 눌러 정보를 기재해 주세요. 정산팀이 실시간 확인 후 1분 내로 프리미엄 활성화 링크를 이메일로 자동 송출해 드립니다.
               </p>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <a 
-                  href="mailto:jdifl.outbound@gmail.com?subject=[입금확인요청] 프리미엄 패키지 활성화&body=입금자명: %0A가입이메일: " 
-                  className="btn btn-secondary" 
-                  style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                >
-                  ✉️ 이메일로 알리기
-                </a>
-                <a 
-                  href="https://docs.google.com/forms/d/e/1FAIpQLSfD_K_7h8jB5hYc00gT-G1Wp4J2hV_W_y8L9H_3U8Y_V_64w/viewform?usp=sf_link" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="btn btn-secondary" 
-                  style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                >
-                  📝 구글 폼으로 알리기
-                </a>
-              </div>
+              <a 
+                href="https://docs.google.com/forms/d/e/1FAIpQLSctVr0ebGnqFiHsU4lBeWP2eQ3EHrol_eM2mIuxtcGEcE7_2g/viewform?usp=publish-editor" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="btn btn-secondary" 
+                style={{ width: '100%', justifyContent: 'center', fontSize: '0.8rem', textDecoration: 'none', padding: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.5rem', background: 'rgba(6, 182, 212, 0.15)', border: '1px solid var(--accent-cyan)', color: '#ffffff' }}
+              >
+                📝 입금 확인 요청 구글 폼 작성하기
+              </a>
               <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', justifyContent: 'center', marginTop: '1rem', width: '100%' }}>
                 주문 신청 및 송금 완료
               </button>

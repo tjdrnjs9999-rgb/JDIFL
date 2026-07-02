@@ -788,3 +788,32 @@ body {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* VIDEO BACKGROUND STYLES */
+.video-bg-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  overflow: hidden;
+  background-color: #080710;
+}
+
+.video-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.35;
+}
+
+.video-bg-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(8, 7, 16, 0.45) 0%, rgba(8, 7, 16, 0.95) 100%);
+  z-index: -1;
+}

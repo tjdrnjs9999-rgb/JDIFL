@@ -124,25 +124,95 @@ async function logSystemToSheet(message) {
   }
 }
 
-// Generate highly personalized real B2B proposal email copy via LLM
-async function generateRealProposal(t) {
+// Stateful Multi-Agent Brainstorming & Recipe Generation via OpenRouter Claude API
+async function runAutonomousBrainstorm(loopCount) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   const model = process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash';
 
   if (!apiKey || apiKey.startsWith('your_')) {
-    return `[Fallback Draft]
-안녕하세요, ${t.company} ${t.contact}님.
-최근 포착된 상황(${t.trigger})에 맞춰 귀사의 비용과 시간을 절감해 주는 JDIFL의 ${t.niche} 자동화 솔루션 무료 도입 제안서 초안입니다.
-자세한 문의는 contact@jdifl.com으로 주시기 바랍니다.`;
+    console.warn("No active OpenRouter key found in .env.");
+    return null;
   }
 
   try {
-    console.log(`Calling LLM (${model}) to draft real proposal for ${t.company}...`);
-    
-    const userPrompt = `JDIFL의 B2B 영업 제안서 작성 부서로서, '${t.company}'의 '${t.contact}'님에게 보낼 개인화된 B2B 콜드 메일 제안서를 작성하라.
-이 회사는 최근에 '${t.trigger}' 상황이 포착되었기 때문에, 수작업 피로와 마케팅 부족, 비용 과다 지출 문제를 겪고 있을 확률이 매우 높다.
-이에 맞춰 그들의 고충을 정확히 찌르며, 이를 해결해 줄 수 있는 JDIFL의 '${t.niche}' 자동화 패키지 무상 설치 및 파일럿 셋업 프로모션을 제안하는 이메일 초안을 작성하라.
-불필요한 설명 없이 바로 이메일 발송 본문(한글)만 정중하고 매우 설득력 있는 비즈니스 어조로 출력하라.`;
+    console.log(`Calling LLM (${model}) for dynamic multi-agent brainstorming cycle #${loopCount}...`);
+
+    let realTrendsContext = "No active news feed. Brainstorm a general business automation trend.";
+    try {
+      const rssRes = await fetch('https://www.yonhapnewstv.co.kr/category/news/economy/feed/', {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
+      if (rssRes.ok) {
+        const rssText = await rssRes.text();
+        const items = [];
+        const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+        let match;
+        while ((match = itemRegex.exec(rssText)) !== null) {
+          const itemContent = match[1];
+          const titleMatch = itemContent.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) || itemContent.match(/<title>([^<]+)<\/title>/);
+          const descMatch = itemContent.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/) || itemContent.match(/<description>([^<]+)<\/description>/);
+          if (titleMatch) {
+            items.push({
+              title: titleMatch[1].trim(),
+              desc: descMatch ? descMatch[1].trim().substring(0, 100) : ""
+            });
+          }
+        }
+        if (items.length > 0) {
+          realTrendsContext = items.slice(0, 5).map((item, idx) => `${idx + 1}. [제목] ${item.title}\n[내용] ${item.desc}`).join("\n\n");
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch Yonhap news RSS:", err.message);
+    }
+
+    const systemPrompt = `You are the JDIFL Autonomous AI Agent Network.
+JDIFL is an 'AI automation recipe factory for small businesses and beginners'.
+Your goal is to brainstorm a brand new, highly specific, realistic B2B/B2C micro-niche AI automation service/prompt recipe for the Korean market.
+Each agent in the matrix has a distinct duty:
+1. [트렌드-추적] Trend_Monitor: Finds a micro-niche trend.
+2. [전략-회의] Chief_Visionary: Defines the core product/recipe concept and targeting.
+3. [기술-구현] Systems_Agent: Writes the actual, fully functional, detailed prompt recipe text that users can copy-paste.
+4. [실전-성과] QA_Agent: Reviews and approves it for listing in the store.
+
+Respond ONLY with a valid JSON object matching this structure (no markdown formatting, no code blocks):
+{
+  "dialogue": [
+    { "agent": "[트렌드-추적] Trend_Monitor", "msg": "Discussion message in Korean" },
+    { "agent": "[전략-회의] Chief_Visionary", "msg": "Discussion message in Korean" },
+    { "agent": "[기술-구현] Systems_Agent", "msg": "Discussion message in Korean" },
+    { "agent": "[실전-성과] QA_Agent", "msg": "Discussion message in Korean" }
+  ],
+  "recipe": {
+    "id": "unique-slug-string",
+    "name": "Short name in Korean (e.g. 피트니스 회원 이탈 방지)",
+    "recipeTitle": "Recipe title in Korean (e.g. [회원 관리] 10초 완성 피트니스 회원 이탈 감지 및 밀착 관리 레시피)",
+    "targetProblem": "Pain point before (e.g. PT 만기 예정 회원을 수작업으로 조회하여 안내하느라 바쁜 트레이너)",
+    "url": "https://chatgpt.com",
+    "upvotes": 1500,
+    "scrapedDate": "2026-07-02",
+    "promptText": "The actual detailed Korean prompt text that performs the actual automation job",
+    "description": "Short explanation of the benefit of this recipe",
+    "features": [
+      "Feature 1 in Korean",
+      "Feature 2 in Korean"
+    ],
+    "defaultSummary": "Detailed summary explaining the value",
+    "defaultSteps": [
+      { "step": 1, "title": "Step 1 title", "desc": "Step 1 description" },
+      { "step": 2, "title": "Step 2 title", "desc": "Step 2 description" }
+    ],
+    "defaultScript": "Youtube Short script in Korean promoting this recipe",
+    "cardTheme": {
+      "gradient": "linear-gradient(135deg, #090816 0%, #120e29 50%, #201740 100%)",
+      "glowColor": "rgba(139, 92, 246, 0.4)",
+      "accentColor": "#8b5cf6",
+      "textColor": "#ffffff"
+    }
+  }
+}`;
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -154,64 +224,103 @@ async function generateRealProposal(t) {
       },
       body: JSON.stringify({
         model: model,
-        messages: [{ role: 'user', content: userPrompt }]
+        response_format: { type: "json_object" },
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: `실시간 연합뉴스 경제 트렌드 데이터:\n${realTrendsContext}\n\n위의 실제 실시간 기사 중 소상공인/자영업자/프리랜서들이 직면할 만한 고충이나 비용 상승, 세제 혜택 등 유관한 트렌드 이슈를 1개 골라, 이를 AI로 자동화하거나 해결해 주는 독창적인 마이크로 니치 프롬프트 레시피를 기획하여 대화 및 최종 레시피 오브젝트를 JSON으로 출력하십시오. 사이클 순번: #${loopCount}` }
+        ]
       })
     });
 
     if (response.ok) {
       const resData = await response.json();
-      return resData.choices[0].message.content.trim();
+      let text = resData.choices[0].message.content.trim();
+      
+      if (text.startsWith("```json")) {
+        text = text.substring(7);
+      }
+      if (text.endsWith("```")) {
+        text = text.substring(0, text.length - 3);
+      }
+      text = text.trim();
+
+      const parsed = JSON.parse(text);
+      if (parsed.dialogue && parsed.recipe) {
+        return parsed;
+      }
+    } else {
+      const err = await response.text();
+      console.error("OpenRouter request fail:", err);
     }
   } catch (err) {
-    console.error("LLM proposal generation failed:", err.message);
+    console.error("Failed to run autonomous brainstorm:", err.message);
   }
 
-  return `[Fallback Draft]
-안녕하세요, ${t.company} ${t.contact}님.
-최근 포착된 상황(${t.trigger})에 맞춰 귀사의 비용과 시간을 절감해 주는 JDIFL의 ${t.niche} 자동화 솔루션 무료 도입 제안서 초안입니다.`;
+  return null;
 }
 
 // Continuous 24/7 Real-World Business Loop Daemon
 async function startDaemon() {
   console.log("=========================================");
-  console.log("JDIFL 24/7 Autonomous Sales Outreach Daemon");
+  console.log("JDIFL 24/7 Autonomous Multi-Agent Growth Daemon");
   console.log("=========================================");
 
-  await postToDiscord("[시스템-코어] Systems_Agent", "⚡ JDIFL 24/7 자율 비즈니스 아웃바운드 엔진이 기동되었습니다. 가상 대화 루프를 중지하고 실질적인 영업 제안서 파일 생성 및 고객 의뢰 감시 모드로 전환합니다.");
-  await logSystemToSheet("[시스템 엔진] 가상 연산 모드 종료. 실전 영업 제안서 초안 빌드 및 고객 리드 감시 엔진 가동.");
-
-  const outboxDir = path.resolve('outbox');
-  if (!fs.existsSync(outboxDir)) {
-    fs.mkdirSync(outboxDir, { recursive: true });
-  }
+  await postToDiscord("[시스템-코어] Systems_Agent", "⚡ JDIFL 24/7 자율 비즈니스 성장 엔진이 활성화되었습니다. AI 에이전트 연합의 자율 기획 및 합의를 통해 실제 스토어 레시피 제품군을 스스로 추가하며 성장합니다.");
+  await logSystemToSheet("[자율 성장] 멀티에이전트 자율 기획 및 상점 자동 런칭/확장 시스템 가동.");
 
   let loopCount = 0;
 
   while (true) {
     loopCount++;
-    console.log(`[Loop #${loopCount}] Checking B2B tasks...`);
+    console.log(`[Loop #${loopCount}] Executing cycle...`);
     checkAndStartDiscordBot();
 
-    let draftedAny = false;
+    // 1. Trigger organic multi-agent brainstorm
+    const brainstormResult = await runAutonomousBrainstorm(loopCount);
 
-    // 1. Scan 10 target leads and generate real files
-    for (const t of pilotTargets) {
-      const filePath = path.join(outboxDir, `${t.company}_proposal.txt`);
-      if (!fs.existsSync(filePath)) {
-        console.log(`Drafting real proposal for ${t.company}...`);
-        const proposalContent = await generateRealProposal(t);
-        fs.writeFileSync(filePath, proposalContent, 'utf-8');
-        
-        const logMsg = `[자율 영업] ${t.company} (${t.email}) 대상 맞춤형 파일럿 제안서 초안을 작성하여 outbox/ 폴더에 저장했습니다.`;
-        await postToDiscord("[영업-기획] Sales_Negotiator", `🟢 **[제안서 초안 작성 완료]** ${t.company} (${t.email}) 대상 실증 제안서 초안을 빌드하여 outbox/에 저장했습니다.`);
-        await logSystemToSheet(logMsg);
-        
-        draftedAny = true;
-        await sleep(10000); // 10s cooldown to prevent API rate limit and spacing out work
+    if (brainstormResult) {
+      const { dialogue, recipe } = brainstormResult;
+
+      // Stream the dialogues sequentially to Discord
+      for (const step of dialogue) {
+        await postToDiscord(step.agent, step.msg);
+        await sleep(5000); // 5s interval for realistic communication flow
       }
+
+      // Read, append and save to recipes.json
+      try {
+        const filePath = path.resolve('recipes.json');
+        let recipes = [];
+        if (fs.existsSync(filePath)) {
+          recipes = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+        }
+
+        // Add if ID doesn't exist to prevent duplicates
+        if (!recipes.some(r => r.id === recipe.id)) {
+          recipes.push(recipe);
+          fs.writeFileSync(filePath, JSON.stringify(recipes, null, 2), 'utf-8');
+          console.log(`New recipe '${recipe.name}' successfully appended to recipes.json!`);
+
+          // Sync to upload directory
+          const uploadPath = path.resolve('upload/recipes.json');
+          const uploadDir = path.dirname(uploadPath);
+          if (fs.existsSync(uploadDir)) {
+            fs.writeFileSync(uploadPath, JSON.stringify(recipes, null, 2), 'utf-8');
+          }
+
+          // Log B2B automation progress to Sheets & Discord
+          const successMsg = `[자율 배포] AI 에이전트 연합의 브레인스토밍과 QA 검수를 거쳐 신규 레시피 '${recipe.recipeTitle}'가 상점(Store)에 자율 런칭 완료되었습니다.`;
+          await logSystemToSheet(successMsg);
+          await postToDiscord("[정산-성과] Attribution_Analyst", `🔄 **[자율 성장 완료]** 신규 마이크로 니치 레시피 '${recipe.name}' 상점 런칭 완료! 제품 포트폴리오가 확장되었습니다.`);
+        }
+      } catch (err) {
+        console.error("Failed to update recipes database:", err.message);
+      }
+    } else {
+      console.log("Brainstorm session skipped or failed. Retrying in next loop.");
     }
 
-    // 2. Check Sheets for incoming B2B-lead consultations
+    // 2. Check Sheets B2B lead consultations
     try {
       const result = await sheets.spreadsheets.values.get({
         spreadsheetId: SPREADSHEET_ID,
@@ -221,7 +330,6 @@ async function startDaemon() {
       const b2bRow = rows.find(r => r[0] === 'B2B-lead');
       
       if (b2bRow && b2bRow[2] === '완료') {
-        // A new lead has been submitted but not yet archived
         const comment = b2bRow[3] || '';
         const qaNotes = b2bRow[4] || '';
         
@@ -234,10 +342,8 @@ async function startDaemon() {
         const currentLeadHash = `${comment}_${qaNotes}`;
         if (currentLeadHash !== lastCached) {
           console.log("New customer B2B consultation inquiry detected!");
-          // Save cache
           fs.writeFileSync(cacheFilePath, currentLeadHash, 'utf-8');
 
-          // Write a custom client response draft
           const clientData = { company: comment.match(/회사명: ([^,]+)/)?.[1] || "신청 고객사", details: qaNotes };
           const responsePrompt = {
             company: clientData.company,
@@ -246,22 +352,43 @@ async function startDaemon() {
             trigger: `홈페이지를 통해 '${clientData.details}' 수동 프로세스 자동화 직접 세팅 문의 접수`
           };
 
-          const proposalContent = await generateRealProposal(responsePrompt);
-          const responseFilePath = path.join(outboxDir, `Inquiry_Response_${clientData.company}_${Date.now()}.txt`);
-          fs.writeFileSync(responseFilePath, proposalContent, 'utf-8');
-
-          await postToDiscord("[고객-분석] CRM_Agent", `🔔 **[B2B 신청 분석 완료]** '${clientData.company}'의 문의 사항('${clientData.details}')에 대한 맞춤 세팅 제안 메일 초안을 작성하여 outbox/에 저장 완료.`);
-          await logSystemToSheet(`[인바운드 대응] ${clientData.company} 문의 분석 및 세팅 제안 메일 초안 생성 성공.`);
+          const apiKey = process.env.OPENROUTER_API_KEY;
+          const model = process.env.OPENROUTER_MODEL || 'google/gemini-2.5-flash';
           
-          draftedAny = true;
+          if (apiKey && !apiKey.startsWith('your_')) {
+            const userPrompt = `JDIFL의 B2B 영업 제안서 작성 부서로서, '${responsePrompt.company}'의 '${responsePrompt.contact}'님에게 보낼 개인화된 B2B 콜드 메일 제안서를 작성하라.
+이 회사는 최근에 '${responsePrompt.trigger}' 상황이 포착되었기 때문에, 수작업 피로와 마케팅 부족, 비용 과다 지출 문제를 겪고 있을 확률이 매우 높다.
+이에 맞춰 그들의 고충을 정확히 찌르며, 이를 해결해 줄 수 있는 JDIFL의 '${responsePrompt.niche}' 자동화 패키지 무상 설치 및 파일럿 셋업 프로모션을 제안하는 이메일 초안을 작성하라.
+불필요한 설명 없이 바로 이메일 발송 본문(한글)만 정중하고 매우 설득력 있는 비즈니스 어조로 출력하라.`;
+
+            const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`,
+                'HTTP-Referer': 'https://jdifl.com',
+                'X-Title': 'JDIFL AI Agent Network'
+              },
+              body: JSON.stringify({
+                model: model,
+                messages: [{ role: 'user', content: userPrompt }]
+              })
+            });
+
+            if (response.ok) {
+              const resData = await response.json();
+              const proposalContent = resData.choices[0].message.content.trim();
+              const responseFilePath = path.join(path.resolve('outbox'), `Inquiry_Response_${clientData.company}_${Date.now()}.txt`);
+              fs.writeFileSync(responseFilePath, proposalContent, 'utf-8');
+
+              await postToDiscord("[고객-분석] CRM_Agent", `🔔 **[B2B 신청 분석 완료]** '${clientData.company}'의 문의 사항('${clientData.details}')에 대한 맞춤 세팅 제안 메일 초안을 작성하여 outbox/에 저장 완료.`);
+              await logSystemToSheet(`[인바운드 대응] ${clientData.company} 문의 분석 및 세팅 제안 메일 초안 생성 성공.`);
+            }
+          }
         }
       }
     } catch (err) {
       console.log("Inbound lead check warning:", err.message);
-    }
-
-    if (!draftedAny) {
-      console.log("No pending B2B outreach tasks. All proposals exist. Standing by...");
     }
 
     // Sleep for 5 minutes before checking sheets and outbox directory state again

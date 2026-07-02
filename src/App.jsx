@@ -1,11 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { trendingTools } from './services/mockData';
 import WorkflowTimeline from './components/WorkflowTimeline';
 import ResearchAgent from './components/ResearchAgent';
 import EditorAgent from './components/EditorAgent';
 import VisualAgent from './components/VisualAgent';
 
 export default function App() {
+  const [trendingTools, setTrendingTools] = useState([]);
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/recipes');
+        const data = await response.json();
+        if (data.success) {
+          setTrendingTools(data.recipes);
+        }
+      } catch (err) {
+        console.log("Failed to fetch recipes:", err.message);
+      }
+    };
+    fetchRecipes();
+    const interval = setInterval(fetchRecipes, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
   const [workflowStep, setWorkflowStep] = useState(1);
   const [selectedTool, setSelectedTool] = useState(null);
   const [isResearching, setIsResearching] = useState(false);

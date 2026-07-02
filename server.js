@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { google } from 'googleapis';
 import path from 'path';
+import fs from 'fs';
 
 const app = express();
 const PORT = 3001;
@@ -137,6 +138,16 @@ app.get('/api/system-logs', async (req, res) => {
     res.json({ success: true, logs: logs });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 1.6 GET: Fetch recipes from recipes.json
+app.get('/api/recipes', (req, res) => {
+  try {
+    const data = fs.readFileSync(path.resolve('recipes.json'), 'utf-8');
+    res.json({ success: true, recipes: JSON.parse(data) });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

@@ -25,7 +25,13 @@ export default function App() {
 
   // Bank Deposit checkout state (Toss PG Alternative)
   const [showCheckoutSim, setShowCheckoutSim] = useState(false);
-  const [bankAccount, setBankAccount] = useState(localStorage.getItem('jdifl_bank_account') || "카카오뱅크 3333-01-1234567 (예금주: JDIFL)");
+  const [bankAccount, setBankAccount] = useState(() => {
+    const saved = localStorage.getItem('jdifl_bank_account');
+    if (!saved || saved.includes("3333-01-1234567")) {
+      return "카카오뱅크 3333-18-1873419 (예금주: 김성권 (버튼))";
+    }
+    return saved;
+  });
   const [checkoutName, setCheckoutName] = useState("");
 
   // Feedback Log State

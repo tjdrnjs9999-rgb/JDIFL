@@ -336,7 +336,7 @@ export default function App() {
     await logKpiToSheet(0, 1, price);
     sendDiscordMessage("Marketing_Agent", `⏳ [무통장 주문 접수] 입금자: ${checkoutName} | 금액: ${price.toLocaleString()}원 입금 대기 중.`);
 
-    alert(`🎉 [주문 신청 완료]\n\n총금액 ${price.toLocaleString()}원을 아래 계좌로 송금해 주세요.\n\n송금 처리가 확인되면 대시보드 화면상에서 즉시 다운로드 링크와 소스 복사 권한이 활성화됩니다.\n\n계좌: ${bankAccount}`);
+    alert(`🎉 [무통장 주문 접수 완료]\n\n총금액 ${price.toLocaleString()}원을 아래 계좌로 입금해 주세요.\n\n입금 후 jdifl.outbound@gmail.com 메일로 입금 확인 메일을 보내주시거나 입금 확인 구글 폼에 등록해 주시면, 에이전트 정산팀이 즉시 확인하여 1분 내로 [프리미엄 활성화 링크]를 이메일로 자동 송출해 드립니다.\n\n계좌: ${bankAccount}`);
     setShowCheckoutSim(false);
     setCheckoutName("");
     triggerToast("무통장 주문 신청이 정상 접수되었습니다.");
@@ -537,6 +537,43 @@ export default function App() {
           </div>
 
           <div>
+            {userEmail && (
+              <div className="glass-panel" style={{ padding: '2rem', border: '1px solid var(--accent-cyan)', marginBottom: '1.5rem', animation: 'fadeIn 0.3s ease-out' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--accent-cyan)' }}>
+                    🎁 [무료 개방] 맥킨지식 1페이지 의사결정 보고서 자동화 레시피
+                  </h3>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--accent-cyan)', fontWeight: '700', padding: '0.25rem 0.75rem', borderRadius: '20px', background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.2)' }}>
+                    가입 선물
+                  </span>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', lineHeight: '1.6' }}>
+                  지저분하게 나열된 회의 내용이나 녹취 텍스트를 맥킨지 컨설팅의 시니어 파트너 수준으로 정제하여, 한눈에 핵심을 짚는 [의사결정 보고서]로 3초 만에 정리해 주는 실무 인스턴트 레시피입니다. 아래 프롬프트를 복사하여 AI 비서에 입력하세요.
+                </p>
+                <div style={{ background: '#0b0f19', borderRadius: '8px', padding: '1rem', fontFamily: 'monospace', fontSize: '0.8rem', whiteSpace: 'pre-wrap', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '1.25rem', color: 'var(--text-secondary)' }}>
+{`너는 맥킨지 컨설팅의 시니어 파트너다. 다음 회의록 초안(녹취록 또는 단순 메모)을 바탕으로, 맥킨지식 '1페이지 의사결정 보고서'를 도출해라.
+
+[회의 내용 입력]
+
+의사결정 보고서 필수 구조:
+1. Executive Summary (핵심 요약 3줄)
+2. Key Decisions (확정된 의사결정 사항)
+3. Next Actions (담당자 및 기한이 지정된 액션 플랜)
+4. Risks & Mitigations (잠재적 리스크 및 방어 대책)`}
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`너는 맥킨지 컨설팅의 시니어 파트너다. 다음 회의록 초안(녹취록 또는 단순 메모)을 바탕으로, 맥킨지식 '1페이지 의사결정 보고서'를 도출해라.\n\n[회의 내용 입력]\n\n의사결정 보고서 필수 구조:\n1. Executive Summary (핵심 요약 3줄)\n2. Key Decisions (확정된 의사결정 사항)\n3. Next Actions (담당자 및 기한이 지정된 액션 플랜)\n4. Risks & Mitigations (잠재적 리스크 및 방어 대책)`);
+                    triggerToast("🎁 무료 회의록 레시피 프롬프트가 복사되었습니다!");
+                  }} 
+                  className="btn btn-primary" 
+                  style={{ padding: '0.6rem 1.2rem', fontSize: '0.85rem' }}
+                >
+                  📋 무료 레시피 프롬프트 복사하기
+                </button>
+              </div>
+            )}
+
             <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               📦 오늘 제공되는 프리미엄 자동화 레시피 번들
             </h3>
@@ -549,9 +586,21 @@ export default function App() {
                       {(t.views || t.upvotes || 0).toLocaleString()}명 복사함
                     </span>
                   </div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: '1.4', flexGrow: 1 }}>{t.desc}</p>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--accent-purple)', marginTop: '0.25rem' }}>{t.recipeTitle}</h4>
                   
-                  {userEmail ? (
+                  {/* BEFORE / AFTER VISUAL TEASER */}
+                  <div style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.01)', border: '1px solid rgba(255,255,255,0.03)', borderRadius: '8px', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '0.5rem 0' }}>
+                    <div>
+                      <strong style={{ color: '#ef4444' }}>❌ 도입 전 고충:</strong> 
+                      <span style={{ color: 'var(--text-secondary)', marginLeft: '0.35rem' }}>{t.targetProblem}</span>
+                    </div>
+                    <div style={{ borderTop: '1px dotted rgba(255,255,255,0.05)', paddingTop: '0.35rem' }}>
+                      <strong style={{ color: 'var(--accent-emerald)' }}>✅ 도입 후 성과:</strong> 
+                      <span style={{ color: 'var(--text-secondary)', marginLeft: '0.35rem' }}>{t.description}</span>
+                    </div>
+                  </div>
+
+                  {isPremium ? (
                     <div style={{ marginTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.75rem' }}>
                       <div style={{ background: '#0b0f19', borderRadius: '6px', padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.75rem', whiteSpace: 'pre-wrap', maxHeight: '120px', overflowY: 'auto', border: '1px solid rgba(255,255,255,0.05)', marginBottom: '0.5rem' }}>
                         {t.promptText}
@@ -568,8 +617,28 @@ export default function App() {
                       </button>
                     </div>
                   ) : (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.01)', padding: '0.5rem', borderRadius: '4px', textAlign: 'center', border: '1px dotted rgba(255,255,255,0.05)' }}>
-                      🔒 상단 무료 가입 후 즉시 복사 가능
+                    <div style={{
+                      marginTop: '0.5rem',
+                      padding: '1rem',
+                      borderRadius: '8px',
+                      background: 'rgba(0,0,0,0.4)',
+                      backdropFilter: 'blur(4px)',
+                      border: '1px dashed rgba(255,255,255,0.08)',
+                      textAlign: 'center',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.50rem'
+                    }}>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>
+                        🔒 이 레시피는 유료 패키지 전용 라이센스입니다.
+                      </div>
+                      <button 
+                        onClick={() => setShowCheckoutSim(true)} 
+                        className="btn btn-rose" 
+                        style={{ width: '100%', padding: '0.5rem', fontSize: '0.75rem', justifyContent: 'center' }}
+                      >
+                        ⚡ 50% 특가로 즉시 라이센스 영입
+                      </button>
                     </div>
                   )}
                 </div>
@@ -641,9 +710,27 @@ export default function App() {
                   />
                 </div>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                  ℹ️ 입금 신청 후 기재하신 계좌로 입금해 주시면, 에이전트 정산팀 확인 거쳐 등록 이메일로 1분 내에 자동화 상품 링크가 활성화됩니다.
+                  ℹ️ 입금 후 jdifl.outbound@gmail.com 으로 입금자명을 메일로 보내주시거나 아래 버튼을 눌러 입금을 알려주시면, 정산팀 확인 후 1분 내로 프리미엄 활성화 링크가 메일로 전달됩니다.
                 </p>
-                <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  <a 
+                    href="mailto:jdifl.outbound@gmail.com?subject=[입금확인요청] 프리미엄 패키지 활성화&body=입금자명: %0A가입이메일: " 
+                    className="btn btn-secondary" 
+                    style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  >
+                    ✉️ 이메일로 알리기
+                  </a>
+                  <a 
+                    href="https://docs.google.com/forms/d/e/1FAIpQLSfD_K_7h8jB5hYc00gT-G1Wp4J2hV_W_y8L9H_3U8Y_V_64w/viewform?usp=sf_link" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="btn btn-secondary" 
+                    style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                  >
+                    📝 구글 폼으로 알리기
+                  </a>
+                </div>
+                <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', justifyContent: 'center', marginTop: '1rem', width: '100%' }}>
                   주문 신청 및 송금 완료
                 </button>
               </form>
@@ -1328,9 +1415,27 @@ export default function App() {
                 />
               </div>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                ℹ️ 입금 신청 후 기재하신 계좌로 입금해 주시면, 에이전트 정산팀 확인 거쳐 등록 이메일로 1분 내에 자동화 상품 링크가 활성화됩니다.
+                ℹ️ 입금 후 jdifl.outbound@gmail.com 으로 입금자명을 메일로 보내주시거나 아래 버튼을 눌러 입금을 알려주시면, 정산팀 확인 후 1분 내로 프리미엄 활성화 링크가 메일로 전달됩니다.
               </p>
-              <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <a 
+                  href="mailto:jdifl.outbound@gmail.com?subject=[입금확인요청] 프리미엄 패키지 활성화&body=입금자명: %0A가입이메일: " 
+                  className="btn btn-secondary" 
+                  style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  ✉️ 이메일로 알리기
+                </a>
+                <a 
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSfD_K_7h8jB5hYc00gT-G1Wp4J2hV_W_y8L9H_3U8Y_V_64w/viewform?usp=sf_link" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="btn btn-secondary" 
+                  style={{ flex: 1, justifyContent: 'center', fontSize: '0.75rem', textDecoration: 'none', padding: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+                >
+                  📝 구글 폼으로 알리기
+                </a>
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ padding: '0.75rem', justifyContent: 'center', marginTop: '1rem', width: '100%' }}>
                 주문 신청 및 송금 완료
               </button>
             </form>
